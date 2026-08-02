@@ -1,1 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Nuestro primer año ❤️</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Georgia, 'Times New Roman', serif;
+      background: linear-gradient(135deg, #160b14, #351526, #180b16);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .contenedor {
+      width: 90%;
+      max-width: 650px;
+      padding: 40px 25px;
+    }
+
+    .corazon {
+      font-size: 55px;
+      margin-bottom: 25px;
+      animation: latido 1.8s infinite;
+    }
+
+    h1 {
+      font-size: clamp(38px, 9vw, 70px);
+      margin-bottom: 20px;
+      font-weight: normal;
+    }
+
+    .subtitulo {
+      font-size: 19px;
+      line-height: 1.7;
+      color: #f3dce7;
+      margin-bottom: 40px;
+    }
+
+    .boton {
+      display: inline-block;
+      padding: 16px 32px;
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 50px;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      transition: 0.3s;
+      background: rgba(255,255,255,0.08);
+      cursor: pointer;
+    }
+
+    .boton:hover {
+      background: rgba(255,255,255,0.18);
+      transform: scale(1.05);
+    }
+
+    .detalle {
+      margin-top: 35px;
+      font-size: 13px;
+      color: #c9aeba;
+      letter-spacing: 1px;
+    }
+
+    @keyframes latido {
+      0%, 100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.12);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="contenedor">
+
+    <div class="corazon">❤️</div>
+
+    <h1>Nuestro primer año</h1>
+
+    <p class="subtitulo">
+      365 días, miles de recuerdos,<br>
+      y una historia que todavía estamos escribiendo.
+    </p>
+
+    <a href="#" class="boton" onclick="comenzar()">
+      ✨ Comenzar
+    </a>
+
+    <p class="detalle">
+      Hecho especialmente para ti.
+    </p>
+
+  </div>
+
+  <script>
+    function comenzar() {
+      alert("Esto recién comienza... ❤️");
+    }
+  </script>
+
+</body>
+</html>
