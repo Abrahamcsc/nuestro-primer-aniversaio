@@ -92,6 +92,7 @@ const futureEnding = document.querySelector('.future-ending');
 const futureAudioToggle = document.querySelector('.future-audio-toggle');
 const futureBackToStory = document.querySelector('.future-back-to-story');
 let futureIndex = 0;
+let futureRenderVersion = 0;
 const futureData = [
   {key:'kiss', photos:['beso 1.JPEG','beso 2.JPEG','beso 3.JPEG','beso 4.JPEG'], text:['Hay algo que todavía me emociona imaginar, sueño con que llegue el momento de poder vernos frente a frente y saber que no hay una pantalla en medio de nosotros, poder juntar tus labios con los mios, y decirnos lo mucho que nos amamos, sueño con un dia sentir tu piel. poder sentir tu cuerpo en mis brazos y no soltarte nunca.','Quiero descubrir contigo esa parte de nuestro amor que todavía no hemos podido vivir, con confianza, cariño y paciencia.','Quiero que nuestra intimidad también sea algo maravilloso, algo nuestro, algo que podamos descubrir juntos y recordar con una sonrisa.','Porque a pesar de tantos kilómetros de distancia yo jamas dejare de desearte mi amor.']},
   {key:'wedding', photos:['boda 1.png','boda 2.png','boda3.png','boda 4.png'], text:['Me imagino viéndote ese día y pensando en todo lo que tuvimos que pasar para llegar hasta ahí.','En todas nuestras llamadas, nuestras noches hablando, los momentos bonitos, los difíciles y todas las veces que a pesar de estar tan lejos, seguimos formando parte de la vida del otro.','Quiero que algún día podamos tener ese momento que tantas veces hemos imaginado. Poder tomar tu mano, abrazarte, mirarte a los ojos y saber que después de tanto tiempo ya no tenemos que despedirnos detrás de una pantalla.','Y aunque todavía falta muchísimo para ese día, sueño todos los dias con ese momento. Porque no sé cómo será nuestra boda, ni dónde será, ni qué ropa llevaremos, ni cómo la vayamos a pagar. Pero sí sé algo.','Si algún día llegamos hasta ahí, quiero que seas tú.','por que yo te quiero tener hasta el ultimo dia de mi vida.']},
@@ -392,14 +393,25 @@ function updateLetterCamera(){
   letterSection.style.setProperty('--letter-mobile-overlay-opacity', (.9-warmth*.2).toFixed(4));
 }
 window.addEventListener('scroll',()=>{if(letterSection?.classList.contains('is-visible')&&!letterScrollFrame)letterScrollFrame=requestAnimationFrame(updateLetterCamera)},{passive:true});
-function renderFuture(index){
-  futureIndex = Math.max(0, Math.min(futureData.length - 1, index));
+async function renderFuture(index){
+  const nextIndex = Math.max(0, Math.min(futureData.length - 1, index));
+  const renderVersion = ++futureRenderVersion;
+  const preloadGeneration = beginImagePreloadWindow('future');
+  const data = futureData[nextIndex];
+  const preparedPhotos = await Promise.all(data.photos.map((name) => prepareImageAsset(futureImagePath(name), { priority: 90 })));
+  if (renderVersion !== futureRenderVersion) return;
+
+  const previousPhotos = Array.from(futureChapters[futureIndex]?.querySelectorAll('.future-photo img') || []);
+  futureIndex = nextIndex;
   futureChapters.forEach((chapter, chapterIndex) => { chapter.hidden = chapterIndex !== futureIndex; });
-  const chapter = futureChapters[futureIndex]; const data = futureData[futureIndex];
+  const chapter = futureChapters[futureIndex];
   const text = chapter.querySelector('.future-text'); text.replaceChildren();
   data.text.forEach((line, i) => { const p = document.createElement('p'); p.textContent = line; p.style.setProperty('--future-delay', `${i * .16}s`); if (line === 'Si algún día llegamos hasta ahí, quiero que seas tú.' || line === 'QUIERO MILES DE VIAJES JUNTO A TI') p.classList.add('future-emphasis'); text.append(p); });
   const photos = chapter.querySelector('.future-photos'); photos.replaceChildren();
-  data.photos.forEach((name, i) => { const figure = document.createElement('figure'); figure.className = `future-photo future-photo--${i + 1}`; figure.style.setProperty('--future-delay', `${i * .18}s`); const img = document.createElement('img'); img.src = futureImagePath(name); img.alt = ''; img.loading = i < 2 ? 'eager' : 'lazy'; figure.append(img); photos.append(figure); });
+  data.photos.forEach((name, i) => { const figure = document.createElement('figure'); figure.className = `future-photo future-photo--${i + 1}`; figure.style.setProperty('--future-delay', `${i * .18}s`); const img = document.createElement('img'); img.alt = ''; const previous = previousPhotos[i]; const fallback = !preparedPhotos[i] && previous?.complete && previous.naturalWidth ? { src: previous.currentSrc || previous.src, width: previous.naturalWidth, height: previous.naturalHeight } : null; setPreparedImage(img, preparedPhotos[i] || fallback, futureImagePath(name)); figure.append(img); photos.append(figure); });
+
+  const nextData = futureData[futureIndex + 1];
+  if (nextData) warmImageWindow('future', nextData.photos.map(futureImagePath), preloadGeneration, 3);
 }
 function openFuture(){ storyAudio.pause(); futureAudio.pause(); futureAudio.src='audio/Taylor Swift - Lover.mp3'; futureAudio.loop=false; futureAudio.load(); futureThreshold.classList.remove('is-visible'); futureThreshold.setAttribute('aria-hidden','true'); futureStory.classList.add('is-visible'); futureStory.setAttribute('aria-hidden','false'); futureIndex=0; renderFuture(0); futureAudio.currentTime=0; futureAudio.volume=.68; futureAudio.play().catch((error) => console.warn('[future-audio] Playback failed:', error.name)); }
 if (futureStart) futureStart.addEventListener('click', openFuture);
@@ -444,22 +456,32 @@ let storyIndex = 0;
 let storyTimer;
 let storyUnlockTimer;
 let storyManualOverride = false;
+let storyRenderVersion = 0;
 const storyImagePath = (name) => encodeURI(`images/historia/${name}`);
-function renderStoryChapter(index, direction = 1) {
-  storyIndex = Math.max(0, Math.min(storyChapters.length - 1, index));
+async function renderStoryChapter(index, direction = 1) {
+  const nextIndex = Math.max(0, Math.min(storyChapters.length - 1, index));
+  const renderVersion = ++storyRenderVersion;
+  const preloadGeneration = beginImagePreloadWindow('story');
+  const chapter = storyChapters[nextIndex];
+  const previousPhotos = Array.from(storyGallery.querySelectorAll('img'));
+  storyNext.disabled = true;
+  window.clearTimeout(storyUnlockTimer);
+  const preparedPhotos = await Promise.all(chapter.photos.map((name) => prepareImageAsset(storyImagePath(name), { priority: 90 })));
+  if (renderVersion !== storyRenderVersion) return;
+
+  storyIndex = nextIndex;
   storyScene.classList.remove('is-complete');
-  const chapter = storyChapters[storyIndex];
   storyScene.dataset.chapter = chapter.theme;
   storyTitle.textContent = chapter.title;
   storyCount.textContent = `${String(storyIndex + 1).padStart(2,'0')} / 05`;
   storyChapterNumber.textContent = String(storyIndex + 1).padStart(2,'0');
   storyBack.hidden = storyIndex === 0;
   storyProgressLine.style.width = `${((storyIndex + 1) / 5) * 100}%`;
-  storyNext.disabled = true;
-  window.clearTimeout(storyUnlockTimer);
   storyFragments.replaceChildren(); storyGallery.replaceChildren();
   chapter.fragments.forEach((text, fragmentIndex) => { const p = document.createElement('p'); p.textContent = text; p.style.setProperty('--fragment-delay', `${fragmentIndex * .18}s`); if (storyIndex === 4 && fragmentIndex === 3) p.classList.add('story-fragment--final'); storyFragments.append(p); });
-  chapter.photos.forEach((name, photoIndex) => { const figure = document.createElement('figure'); figure.className = `story-photo story-photo--${photoIndex + 1}`; figure.style.setProperty('--photo-delay', `${photoIndex * .16}s`); const image = document.createElement('img'); image.src = storyImagePath(name); image.alt = ''; image.decoding = 'async'; figure.append(image); storyGallery.append(figure); });
+  chapter.photos.forEach((name, photoIndex) => { const figure = document.createElement('figure'); figure.className = `story-photo story-photo--${photoIndex + 1}`; figure.style.setProperty('--photo-delay', `${photoIndex * .16}s`); const image = document.createElement('img'); image.alt = ''; const previous = previousPhotos[photoIndex]; const fallback = !preparedPhotos[photoIndex] && previous?.complete && previous.naturalWidth ? { src: previous.currentSrc || previous.src, width: previous.naturalWidth, height: previous.naturalHeight } : null; setPreparedImage(image, preparedPhotos[photoIndex] || fallback, storyImagePath(name)); figure.append(image); storyGallery.append(figure); });
+  const nextChapter = storyChapters[storyIndex + 1];
+  if (nextChapter) warmImageWindow('story', nextChapter.photos.map(storyImagePath), preloadGeneration, 3);
   storyUnlockTimer = window.setTimeout(() => { storyNext.disabled = false; }, 750 + Math.max(0, chapter.fragments.length - 1) * 180);
   storyScene.style.setProperty('--story-direction', direction);
 }
@@ -474,10 +496,158 @@ const photoExt = new Set([5,6,29,43,44,46,52,82,99,100,106,111,122,134]);
 const photoPath = (id) => encodeURI(`images/memories/foto ${id}${id === 109 ? ' ' : ''}.${id === 121 ? 'JPG' : id === 133 ? 'PNG' : photoExt.has(id) ? 'jpg' : 'JPEG'}`);
 const photoItems = Array.from({ length: 22 }, () => { const item = document.createElement('figure'); item.className = 'photo-cluster__item'; const image = document.createElement('img'); image.alt = ''; image.decoding = 'async'; item.append(image); photoCluster.append(item); return item; });
 const fixedImages = [leftPhoto, rightPhoto].map((slot) => { const image = document.createElement('img'); image.alt = ''; image.decoding = 'async'; slot.prepend(image); return image; });
-const photoLoadCache = new Map();
+const optimizedImageSources = new Set([
+  'images/historia/comienzo 1.jpg', 'images/historia/comienzo 2.jpeg', 'images/historia/distancia 2.jpg', 'images/historia/enamorarnos 2.jpg', 'images/historia/enamorarnos 3.jpg',
+  'images/historia/ahora 2.JPEG', 'images/historia/ahora 3.JPEG', 'images/historia/distancia 3.JPEG', 'images/historia/enamorarnos 4.JPEG',
+  'images/future/beso 2.JPEG', 'images/future/beso 4.JPEG',
+  'images/future/boda 1.png', 'images/future/boda 2.png', 'images/future/boda3.png', 'images/future/boda 4.png',
+  'images/future/familia 1.png', 'images/future/familia 2.png', 'images/future/familia 3.png', 'images/future/familia 4.png',
+  'images/future/viajes 1.png', 'images/future/viajes 2.png', 'images/future/viajes 3.png', 'images/future/viajes 4.png'
+]);
+const webpImageSupport = (() => { const canvas = document.createElement('canvas'); return canvas.toDataURL('image/webp').startsWith('data:image/webp'); })();
+const preparedImageCache = new Map();
+const imagePreparationQueue = [];
+const imagePreloadGenerations = new Map();
+const maxPreparedImageCache = 14;
+const maxConcurrentImagePreparations = 3;
+let activeImagePreparations = 0;
+let makeYouStayPreloadSignature = '';
 let photoSignature = '';
 let photoTargetSignature = '';
 let photoPreloadFrame = 0;
+
+function imageCandidates(originalUrl) {
+  let decodedUrl = originalUrl;
+  try { decodedUrl = decodeURI(originalUrl); } catch {}
+  const canonicalOriginal = encodeURI(decodedUrl);
+  const optimizedUrl = webpImageSupport && optimizedImageSources.has(decodedUrl)
+    ? encodeURI(decodedUrl.replace(/\.[^./]+$/, '.webp'))
+    : canonicalOriginal;
+  return optimizedUrl === canonicalOriginal ? [canonicalOriginal] : [optimizedUrl, canonicalOriginal];
+}
+
+function trimPreparedImageCache() {
+  let readyCount = Array.from(preparedImageCache.values()).filter((entry) => entry.status === 'ready' || entry.status === 'failed').length;
+  if (readyCount <= maxPreparedImageCache) return;
+  for (const [key, entry] of preparedImageCache) {
+    if (entry.status !== 'ready' && entry.status !== 'failed') continue;
+    preparedImageCache.delete(key);
+    readyCount -= 1;
+    if (readyCount <= maxPreparedImageCache) break;
+  }
+}
+
+function cancelStaleImagePreloads(group, generation) {
+  for (let index = imagePreparationQueue.length - 1; index >= 0; index -= 1) {
+    const entry = imagePreparationQueue[index];
+    if (!entry.speculative || entry.group !== group || entry.generation === generation) continue;
+    imagePreparationQueue.splice(index, 1);
+    if (preparedImageCache.get(entry.key) === entry) preparedImageCache.delete(entry.key);
+    entry.status = 'cancelled';
+    entry.resolve(null);
+  }
+}
+
+function beginImagePreloadWindow(group) {
+  const generation = (imagePreloadGenerations.get(group) || 0) + 1;
+  imagePreloadGenerations.set(group, generation);
+  cancelStaleImagePreloads(group, generation);
+  return generation;
+}
+
+function finishImagePreparation(entry, image, result) {
+  if (image) { image.onload = null; image.onerror = null; }
+  entry.status = result ? 'ready' : 'failed';
+  entry.result = result;
+  entry.resolve(result);
+  activeImagePreparations = Math.max(0, activeImagePreparations - 1);
+  trimPreparedImageCache();
+  pumpImagePreparationQueue();
+}
+
+function loadImageCandidate(entry, candidateIndex) {
+  let image = new Image();
+  image.decoding = 'async';
+  image.loading = 'eager';
+  if ('fetchPriority' in image) image.fetchPriority = entry.priority >= 75 ? 'high' : entry.priority < 20 ? 'low' : 'auto';
+  image.onload = () => {
+    const finish = () => {
+      const result = image?.naturalWidth && image?.naturalHeight
+        ? { src: entry.candidates[candidateIndex], width: image.naturalWidth, height: image.naturalHeight }
+        : null;
+      finishImagePreparation(entry, image, result);
+      image = null;
+    };
+    if (typeof image.decode === 'function') image.decode().then(finish).catch(finish);
+    else finish();
+  };
+  image.onerror = () => {
+    image.onload = null;
+    image.onerror = null;
+    image = null;
+    if (candidateIndex + 1 < entry.candidates.length) loadImageCandidate(entry, candidateIndex + 1);
+    else finishImagePreparation(entry, null, null);
+  };
+  image.src = entry.candidates[candidateIndex];
+}
+
+function pumpImagePreparationQueue() {
+  imagePreparationQueue.sort((a, b) => b.priority - a.priority || a.sequence - b.sequence);
+  while (activeImagePreparations < maxConcurrentImagePreparations && imagePreparationQueue.length) {
+    const entry = imagePreparationQueue.shift();
+    if (entry.speculative && imagePreloadGenerations.get(entry.group) !== entry.generation) {
+      if (preparedImageCache.get(entry.key) === entry) preparedImageCache.delete(entry.key);
+      entry.status = 'cancelled';
+      entry.resolve(null);
+      continue;
+    }
+    entry.status = 'loading';
+    activeImagePreparations += 1;
+    loadImageCandidate(entry, 0);
+  }
+}
+
+function prepareImageAsset(originalUrl, { priority = 50, speculative = false, group = null, generation = 0 } = {}) {
+  if (!originalUrl) return Promise.resolve(null);
+  const candidates = imageCandidates(originalUrl);
+  const key = candidates[0];
+  const existing = preparedImageCache.get(key);
+  if (existing) {
+    preparedImageCache.delete(key);
+    preparedImageCache.set(key, existing);
+    if (!speculative) { existing.speculative = false; existing.group = null; }
+    existing.priority = Math.max(existing.priority, priority);
+    if (existing.status === 'queued') pumpImagePreparationQueue();
+    return existing.promise;
+  }
+
+  let resolve;
+  const promise = new Promise((settle) => { resolve = settle; });
+  const entry = { key, candidates, priority, speculative, group, generation, sequence: performance.now(), status: 'queued', result: null, resolve, promise };
+  preparedImageCache.set(key, entry);
+  imagePreparationQueue.push(entry);
+  pumpImagePreparationQueue();
+  return promise;
+}
+
+function warmImageWindow(group, urls, generation, count = 3) {
+  if (imagePreloadGenerations.get(group) !== generation) return;
+  urls.slice(0, count).forEach((url) => prepareImageAsset(url, { priority: 15, speculative: true, group, generation }));
+}
+
+function setPreparedImage(image, preparedAsset, originalUrl) {
+  image.decoding = 'async';
+  image.loading = 'eager';
+  if (preparedAsset?.width && preparedAsset?.height) {
+    image.width = preparedAsset.width;
+    image.height = preparedAsset.height;
+  }
+  const candidates = imageCandidates(originalUrl);
+  const original = candidates[candidates.length - 1];
+  const source = preparedAsset?.src || original;
+  if (source !== original) image.addEventListener('error', () => { image.src = original; }, { once: true });
+  image.src = source;
+}
 
 function listRangeIds(first, last) {
   const ids = [];
@@ -509,35 +679,14 @@ function getPhotoPreloadPlan(currentTime) {
       if (seen.has(id)) continue;
       seen.add(id);
       ids.push(id);
-      if (ids.length >= 24) break;
+      if (ids.length >= 3) break;
     }
-    if (ids.length >= 24) break;
+    if (ids.length >= 3) break;
   }
   return ids;
 }
 
-function loadPhotoAsset(id) {
-  if (!Number.isInteger(id)) return Promise.resolve(null);
-  if (photoLoadCache.has(id)) return photoLoadCache.get(id);
-
-  const loader = new Promise((resolve) => {
-    const image = new Image();
-    image.decoding = 'async';
-    image.loading = 'eager';
-    image.onload = () => {
-      if (typeof image.decode === 'function') {
-        image.decode().then(() => resolve(image)).catch(() => resolve(image));
-      } else {
-        resolve(image);
-      }
-    };
-    image.onerror = () => resolve(null);
-    image.src = photoPath(id);
-  });
-
-  photoLoadCache.set(id, loader);
-  return loader;
-}
+function loadPhotoAsset(id, options) { return Number.isInteger(id) ? prepareImageAsset(photoPath(id), options) : Promise.resolve(null); }
 
 function schedulePhotoPreload(currentTime = Number.isFinite(songAudio?.currentTime) ? songAudio.currentTime : 0) {
   if (photoPreloadFrame) return;
@@ -545,9 +694,12 @@ function schedulePhotoPreload(currentTime = Number.isFinite(songAudio?.currentTi
     photoPreloadFrame = 0;
     const safeTime = Number.isFinite(songAudio?.currentTime) ? songAudio.currentTime : currentTime;
     const nextPhotos = getPhotoPreloadPlan(safeTime);
-    nextPhotos.slice(0, 18).forEach((id) => {
-      if (!photoLoadCache.has(id)) loadPhotoAsset(id);
-    });
+    const ids = nextPhotos.slice(0, 3);
+    const signature = ids.join(',');
+    if (signature === makeYouStayPreloadSignature) return;
+    makeYouStayPreloadSignature = signature;
+    const generation = beginImagePreloadWindow('make-you-stay');
+    warmImageWindow('make-you-stay', ids.map(photoPath), generation, 3);
   });
 }
 
@@ -562,18 +714,18 @@ function photoDirector(time) {
   if (!ids.length) return;
 
   if (pair) {
-    Promise.all(ids.map((id) => loadPhotoAsset(id))).then(() => {
-      if (photoTargetSignature !== signature) return;
+    Promise.all(ids.map((id) => loadPhotoAsset(id, { priority: 90 }))).then((preparedPhotos) => {
+      if (photoTargetSignature !== signature || preparedPhotos.some((asset) => !asset)) return;
       fixedImages.forEach((image, index) => {
         const id = ids[index];
         if (!id) return;
-        const nextSource = photoPath(id);
+        const nextSource = preparedPhotos[index].src;
         const slot = image.parentElement;
-        if (image.dataset.photoId === String(id) && image.currentSrc === nextSource) {
+        if (image.dataset.photoId === String(id) && image.getAttribute('src') === nextSource) {
           slot.classList.add('is-ready');
           return;
         }
-        image.src = nextSource;
+        setPreparedImage(image, preparedPhotos[index], photoPath(id));
         image.dataset.photoId = String(id);
         slot.classList.add('is-ready');
       });
@@ -582,8 +734,8 @@ function photoDirector(time) {
     return;
   }
 
-  Promise.all(ids.map((id) => loadPhotoAsset(id))).then(() => {
-    if (photoTargetSignature !== signature) return;
+  Promise.all(ids.map((id) => loadPhotoAsset(id, { priority: 90 }))).then((preparedPhotos) => {
+    if (photoTargetSignature !== signature || preparedPhotos.some((asset) => !asset)) return;
     photoItems.forEach((item, index) => {
       const id = ids[index];
       const image = item.querySelector('img');
@@ -593,12 +745,12 @@ function photoDirector(time) {
         image.dataset.photoId = '';
         return;
       }
-      const nextSource = photoPath(id);
-      if (image.dataset.photoId === String(id) && image.currentSrc === nextSource) {
+      const nextSource = preparedPhotos[index].src;
+      if (image.dataset.photoId === String(id) && image.getAttribute('src') === nextSource) {
         item.classList.add('is-active', 'is-ready');
         return;
       }
-      image.src = nextSource;
+      setPreparedImage(image, preparedPhotos[index], photoPath(id));
       image.dataset.photoId = String(id);
       item.classList.add('is-active', 'is-ready');
     });
