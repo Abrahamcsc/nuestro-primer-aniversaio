@@ -94,9 +94,83 @@
     </div>
     <p class="song-scene__note">una canción, un instante, nosotros</p>
   </section>
+  <section class="story-threshold" id="story-threshold" aria-labelledby="story-threshold-title" aria-hidden="true">
+    <div class="story-threshold__halo" aria-hidden="true"></div>
+    <p class="story-kicker">un nuevo capítulo</p>
+    <h2 id="story-threshold-title">Y nuestra historia…<br><em>todavía tiene mucho que contar.</em></h2>
+    <button class="story-start" type="button">Continuar <span aria-hidden="true">→</span></button>
+  </section>
+  <section class="story-scene" id="story-scene" aria-labelledby="story-title" aria-hidden="true">
+    <button class="story-audio-toggle" type="button" aria-label="Pausar música">Ⅱ</button>
+    <div class="story-stars" aria-hidden="true"><i>✦</i><i>·</i><i>✧</i><i>⌁</i><i>·</i></div>
+    <div class="story-map" aria-hidden="true"><span class="story-map__point story-map__point--peru">Perú</span><span class="story-map__point story-map__point--california">California</span><span class="story-map__route"></span></div>
+    <div class="story-progress"><span class="story-progress__count">01 / 05</span><span class="story-progress__line"><i></i></span></div>
+    <div class="story-content">
+      <p class="story-chapter-label">capítulo <span id="story-chapter-number">01</span></p><h2 id="story-title"></h2><div class="story-fragments" aria-live="polite"></div>
+      <div class="story-navigation"><button class="story-back" type="button">← Regresar</button><button class="story-next" type="button">Continuar <span aria-hidden="true">→</span></button></div>
+    </div>
+    <div class="story-gallery" aria-hidden="true"></div>
+  </section>
+  <audio id="story-audio" preload="auto"><source src="audio/we fell in love in october.mp3" type="audio/mpeg" /></audio>
+  <section class="future-threshold" id="future-threshold" aria-labelledby="future-threshold-title" aria-hidden="true">
+    <p class="future-kicker">lo que todavía nos espera</p>
+    <h2 id="future-threshold-title">Las cosas que todavía<br><em>nos faltan por vivir.</em></h2>
+    <button class="future-start" type="button">Abrir este capítulo <span aria-hidden="true">→</span></button>
+  </section>
+  <main class="future-story" id="future-story" aria-hidden="true">
+    <audio id="future-audio" preload="auto"><source src="audio/Taylor Swift - Lover.mp3" type="audio/mpeg" /></audio>
+    <button class="future-audio-toggle" type="button" aria-label="Pausar música">Ⅱ</button>
+    <button class="future-back-to-story" type="button">← Regresar</button>
+    <div class="future-chapter" data-future-chapter="kiss">
+      <div class="future-atmosphere" aria-hidden="true"><i>✦</i><i>·</i><i>✧</i><i>♡</i><i>⌁</i></div>
+      <div class="future-copy"><span class="future-number">01</span><h2>Nuestro primer beso <span aria-hidden="true">💋</span></h2><div class="future-text"></div></div>
+      <div class="future-photos"></div><button class="future-next" type="button">Continuar <span>→</span></button>
+    </div>
+    <div class="future-chapter" data-future-chapter="wedding" hidden>
+      <div class="future-atmosphere" aria-hidden="true"><i>✦</i><i>·</i><i>✧</i><i>♡</i><i>⌁</i></div>
+      <div class="future-copy"><span class="future-number">02</span><h2>Nuestra boda <span aria-hidden="true">💍</span></h2><div class="future-text"></div></div>
+      <div class="future-photos"></div><div class="future-nav"><button class="future-prev" type="button">← Regresar</button><button class="future-next" type="button">Continuar <span>→</span></button></div>
+    </div>
+    <div class="future-chapter" data-future-chapter="travel" hidden>
+      <div class="future-atmosphere" aria-hidden="true"><i>✦</i><i>·</i><i>✧</i><i>♡</i><i>⌁</i></div>
+      <div class="future-copy"><span class="future-number">03</span><h2>Nuestros viajes <span aria-hidden="true">✈️🌎</span></h2><div class="future-text"></div></div>
+      <div class="future-photos"></div><div class="future-nav"><button class="future-prev" type="button">← Regresar</button><button class="future-next" type="button">Ver el final <span>→</span></button></div>
+    </div>
+    <div class="future-chapter" data-future-chapter="family" hidden>
+      <div class="future-atmosphere" aria-hidden="true"><i>✦</i><i>·</i><i>✧</i><i>♡</i><i>⌁</i></div>
+      <div class="future-copy"><span class="future-number">04</span><h2>Nuestra familia <span aria-hidden="true">🏡🤍</span></h2><div class="future-text"></div></div>
+      <div class="future-photos"></div><div class="future-nav"><button class="future-prev" type="button">← Regresar</button><button class="future-next" type="button">Ver el final <span>→</span></button></div>
+    </div>
+    <div class="future-ending" hidden><p>Y todavía nos quedan tantas cosas por vivir…</p><p>Pero quiero vivirlas todas contigo.</p><p>Te amo. 🤍</p><button class="universe-open" type="button">Entrar a nuestro universo ✦</button></div>
+  </main>
+  <section class="universe-section" id="universe-section" aria-labelledby="universe-title" aria-hidden="true">
+    <audio id="universe-audio" preload="auto"><source src="audio/INTRO.mp3" type="audio/mpeg" /></audio>
+    <button class="universe-audio-toggle" type="button" aria-label="Pausar música">Ⅱ</button>
+    <div class="universe-sky" aria-hidden="true"><i>✦</i><i>·</i><i>✧</i><i>·</i><i>✦</i><i>⌁</i><i>✧</i><i>·</i><i>⋆</i><i>+</i><i>♡</i><i>✦</i></div>
+    <div class="universe-orbit universe-orbit--one" aria-hidden="true"></div><div class="universe-orbit universe-orbit--two" aria-hidden="true"></div>
+    <div class="universe-core"><span>TÚ + YO</span><small>y todo lo que existe entre nosotros</small></div>
+    <div class="universe-heading"><h2 id="universe-title">¿Qué pienso de...?</h2></div>
+    <div class="universe-objects" aria-label="Un pequeño universo de nosotros"></div>
+    <div class="universe-modal" role="dialog" aria-modal="true" aria-hidden="true"><div class="universe-modal__stars">✦ · ✧ · ✦</div><h3></h3><p></p><button type="button" class="universe-close">Volver al universo</button></div>
+    <button class="universe-next-letter" type="button">💌 Abrir mi carta <span aria-hidden="true">→</span></button>
+  </section>
+  <section class="letter-final" id="letter-section" aria-labelledby="letter-final-title" aria-hidden="true">
+    <div class="letter-world" aria-hidden="true">
+      <div class="letter-world__landscapes">
+        <img class="letter-world__image letter-world__image--night" src="images/letter/night-landscape.webp" alt="" fetchpriority="high" />
+        <img class="letter-world__image letter-world__image--dawn" src="images/letter/dawn-landscape.webp" alt="" loading="lazy" />
+        <img class="letter-world__image letter-world__image--mobile" src="images/letter/mobile-landscape.webp" alt="" loading="lazy" />
+      </div>
+      <div class="letter-world__stars"></div><div class="letter-world__moon"></div><div class="letter-world__dust"></div>
+    </div>
+    <button class="letter-final__audio-toggle" type="button" aria-label="Pausar música">Ⅱ</button>
+    <div class="letter-final__intro"><span class="letter-final__eyebrow">el último capítulo</span><h2 id="letter-final-title">Carta para ti</h2><p>un año de nosotros, guardado aquí</p></div>
+    <div class="letter-flow" id="letter-flow" aria-live="polite"></div>
+  </section>
   <audio id="song-audio" preload="auto">
     <source src="audio/cancion.mp3" type="audio/mpeg" />
   </audio>
+  <nav class="global-chapter-nav" id="global-chapter-nav" aria-label="Capítulos principales" hidden><button class="global-chapter-nav__prev" type="button" aria-label="Capítulo anterior">←<span></span></button><span class="global-chapter-nav__current"></span><button class="global-chapter-nav__next" type="button" aria-label="Capítulo siguiente"><span></span>→</button></nav>
   <script src="script.js"></script>
 </body>
 </html>
