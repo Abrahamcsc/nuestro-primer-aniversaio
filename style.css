@@ -486,3 +486,11 @@ Carta final: un solo paisaje continuo, no una colección de tarjetas.
   .story-scene[data-chapter="distance"] .story-photo--3{transform:rotate(5deg)}
   .story-scene[data-chapter="distance"] .story-photo--4{transform:rotate(-5deg)}
 }
+
+/* El CTA de la carta cede el viewport al diálogo del universo mientras una tarjeta está abierta. */
+.universe-section.has-selection .universe-next-letter{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  animation:none!important;
+}
