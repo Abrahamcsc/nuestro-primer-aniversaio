@@ -638,6 +638,10 @@ function warmImageWindow(group, urls, generation, count = 3) {
 function setPreparedImage(image, preparedAsset, originalUrl) {
   image.decoding = 'async';
   image.loading = 'eager';
+  if (preparedAsset?.width && preparedAsset?.height) {
+    image.width = preparedAsset.width;
+    image.height = preparedAsset.height;
+  }
   const candidates = imageCandidates(originalUrl);
   const original = candidates[candidates.length - 1];
   const source = preparedAsset?.src || original;
