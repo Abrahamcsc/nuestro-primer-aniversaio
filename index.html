@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#dceafa" />
+  <title>Nuestro Primer Año</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="cover" aria-labelledby="cover-title">
+    <div class="atmosphere" aria-hidden="true">
+      <i class="cloud cloud--one"></i><i class="cloud cloud--two"></i>
+      <i class="star star--one">✦</i><i class="star star--two">✧</i><i class="star star--three">·</i>
+      <i class="orb orb--one"></i><i class="orb orb--two"></i>
+      <i class="scribble scribble--one">♡</i><i class="scribble scribble--two">∞</i>
+      <i class="postmark">01<br>YEAR</i>
+      <i class="album-detail album-detail--one">✦</i><i class="album-detail album-detail--two">⌁</i><i class="album-detail album-detail--three">⋆</i><i class="album-detail album-detail--four">♡</i>
+      <div class="detail-sky detail-sky--cover" aria-hidden="true"><i>✧</i><i>·</i><i>⌁</i><i>✦</i><i>○</i><i>+</i><i>♡</i><i>·</i><i>✧</i><i>⌒</i><i>⋆</i><i>·</i></div>
+    </div>
+
+    <!-- Replace the src values with your photos, keeping the same filenames if desired. -->
+    <section class="memory-frame memories" aria-label="Nuestros recuerdos">
+      <figure class="polaroid polaroid--one"><i class="washi" aria-hidden="true"></i><img src="images/recuerdo-1.JPEG" alt="Nuestro recuerdo favorito" /><figcaption>el comienzo</figcaption></figure>
+      <figure class="polaroid polaroid--two"><i class="washi" aria-hidden="true"></i><img src="images/recuerdo-2.JPEG" alt="Un momento juntos" /><figcaption>tú & yo</figcaption></figure>
+      <figure class="polaroid polaroid--three"><i class="washi" aria-hidden="true"></i><img src="images/recuerdo-3.JPEG" alt="Una aventura compartida" /><figcaption>un día bonito</figcaption></figure>
+      <figure class="polaroid polaroid--four"><i class="washi" aria-hidden="true"></i><img src="images/recuerdo-4.JPEG" alt="Otro recuerdo especial" /><figcaption>para siempre</figcaption></figure>
+    </section>
+
+    <section class="intro">
+      <p class="eyebrow">para nosotros</p>
+      <span class="date-mark">un año después · todavía tú</span>
+      <h1 id="cover-title">Nuestro<br><em>Primer Año</em></h1>
+      <p class="message">Un año de llamadas infinitas,<br>risas y elegirnos todos los días.<br><br>Eres mi casualidad favorita<br>convertida en el amor de mi vida.</p>
+      <button class="letter" type="button" aria-label="Toca para abrir esta carta">
+        <span class="letter__flap"></span><span class="letter__seal">✦</span><span class="letter__label">Toca para abrir</span>
+      </button>
+    </section>
+  </main>
+
+  <!-- Phase 2: a quiet threshold before the song. -->
+  <section class="transition" aria-labelledby="transition-title" aria-hidden="true">
+    <div class="transition__atmosphere" aria-hidden="true">
+      <i class="transition__glow transition__glow--one"></i><i class="transition__glow transition__glow--two"></i>
+      <i class="transition__particle transition__particle--one">✦</i><i class="transition__particle transition__particle--two">·</i>
+      <i class="transition__particle transition__particle--three">✧</i><i class="transition__particle transition__particle--four">·</i>
+      <i class="transition-detail transition-detail--one">⌁</i><i class="transition-detail transition-detail--two">♡</i><i class="transition-detail transition-detail--three">⋆</i><i class="transition-detail transition-detail--four">—</i>
+      <div class="detail-sky detail-sky--transition" aria-hidden="true"><i>✧</i><i>·</i><i>⌁</i><i>✦</i><i>○</i><i>+</i><i>♡</i><i>·</i><i>✧</i><i>⌒</i><i>⋆</i><i>·</i></div>
+    </div>
+    <div class="transition__content">
+      <p class="transition__kicker">un pequeño secreto</p>
+      <h2 id="transition-title" class="sr-only">Antes de la canción</h2>
+      <div class="transition__message" aria-live="polite">
+        <p>He esperado mucho este momento...</p>
+        <p>Hace unos meses te prometí que algún día te enseñaría una canción muy especial para mí.</p>
+        <p>Hoy, por fin, llegó ese día.</p>
+        <p>No sé si cuando termine de sonar entenderás por qué la elegí...</p>
+        <p>Pero espero que, cada vez que vuelvas a escucharla, también pienses un poquito en nosotros. <span aria-hidden="true">🤍</span></p>
+      </div>
+      <div class="transition__question">
+        <p>¿Estás listo para escucharla?</p>
+        <button class="ready-button" type="button"><span aria-hidden="true">❤️</span> Estoy listo</button>
+      </div>
+    </div>
+  </section>
+  <div class="clean-pause" aria-hidden="true"></div>
+
+  <!-- Phase 3: song scene. Add the audio file and replace the lyric array in script.js later. -->
+  <section class="song-scene" aria-labelledby="song-title" aria-hidden="true">
+    <canvas class="universe-canvas" aria-hidden="true"></canvas>
+    <div class="song-scene__atmosphere" aria-hidden="true">
+      <i class="song-glow song-glow--one"></i><i class="song-glow song-glow--two"></i>
+      <i class="song-dust song-dust--one">✦</i><i class="song-dust song-dust--two">·</i><i class="song-dust song-dust--three">✧</i><i class="song-dust song-dust--four">·</i>
+    </div>
+    <div class="emotion-field" aria-hidden="true">
+      <i class="emotion-aurora"></i><i class="emotion-mist emotion-mist--one"></i><i class="emotion-mist emotion-mist--two"></i>
+      <i class="emotion-wave emotion-wave--one"></i><i class="emotion-wave emotion-wave--two"></i><i class="emotion-wave emotion-wave--three"></i>
+      <i class="emotion-spark emotion-spark--one">✦</i><i class="emotion-spark emotion-spark--two">✧</i><i class="emotion-spark emotion-spark--three">·</i><i class="emotion-spark emotion-spark--four">✦</i><i class="emotion-spark emotion-spark--five">✧</i>
+    </div>
+    <div class="detail-sky detail-sky--song" aria-hidden="true"><i>✧</i><i>·</i><i>⌁</i><i>✦</i><i>○</i><i>+</i><i>♡</i><i>·</i><i>✧</i><i>⌒</i><i>⋆</i><i>·</i></div>
+    <p class="song-scene__eyebrow">una canción para nosotros</p>
+    <h2 id="song-title" class="sr-only">Nuestra canción</h2>
+    <div id="left-photo" class="song-photo song-photo--left" role="img" aria-label="Espacio reservado para una fotografía especial"><i class="washi" aria-hidden="true"></i>
+      <span>un recuerdo<br>va aquí</span>
+    </div>
+    <div id="right-photo" class="song-photo song-photo--right" role="img" aria-label="Espacio reservado para otra fotografía especial"><i class="washi" aria-hidden="true"></i>
+      <span>otro recuerdo<br>va aquí</span>
+    </div>
+    <div id="photo-cluster" class="photo-cluster" aria-hidden="true"></div>
+    <div class="lyrics" aria-live="polite" aria-atomic="true">
+      <p class="lyric lyric--previous"></p>
+      <div class="lyric lyric--current"></div>
+      <p class="lyric lyric--next"></p>
+    </div>
+    <p class="song-scene__note">una canción, un instante, nosotros</p>
+  </section>
+  <audio id="song-audio" preload="auto">
+    <source src="audio/cancion.mp3" type="audio/mpeg" />
+  </audio>
+  <script src="script.js"></script>
+</body>
+</html>
