@@ -18,14 +18,136 @@ const photoExt = new Set([5,6,29,43,44,46,52,82,99,100,106,111,122,134]);
 const photoPath = (id) => encodeURI(`images/memories/foto ${id}${id === 109 ? ' ' : ''}.${id === 121 ? 'JPG' : id === 133 ? 'PNG' : photoExt.has(id) ? 'jpg' : 'JPEG'}`);
 const photoItems = Array.from({ length: 22 }, () => { const item = document.createElement('figure'); item.className = 'photo-cluster__item'; const image = document.createElement('img'); image.alt = ''; image.decoding = 'async'; item.append(image); photoCluster.append(item); return item; });
 const fixedImages = [leftPhoto, rightPhoto].map((slot) => { const image = document.createElement('img'); image.alt = ''; image.decoding = 'async'; slot.prepend(image); return image; });
+const photoLoadCache = new Map();
 let photoSignature = '';
+let photoTargetSignature = '';
+let photoPreloadFrame = 0;
+
+function listRangeIds(first, last) {
+  const ids = [];
+  for (let id = first; id <= last; id += 1) {
+    if (!ids.includes(id)) ids.push(id);
+  }
+  return ids;
+}
+
+function isPriorityPhotoRange(start) {
+  return (start >= 19 && start < 23) || (start >= 28 && start < 33);
+}
+
+function getPhotoPreloadPlan(currentTime) {
+  const priorityRanges = photoRanges
+    .map(([start, end, first, last]) => ({
+      start,
+      end,
+      ids: listRangeIds(first, last),
+      priority: Math.max(0, start - currentTime) + (isPriorityPhotoRange(start) ? -0.75 : 0)
+    }))
+    .filter(({ end }) => end > currentTime - 2 && end <= currentTime + 25)
+    .sort((a, b) => a.priority - b.priority || b.ids.length - a.ids.length);
+
+  const ids = [];
+  const seen = new Set();
+  for (const { ids: rangeIds } of priorityRanges) {
+    for (const id of rangeIds) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      ids.push(id);
+      if (ids.length >= 24) break;
+    }
+    if (ids.length >= 24) break;
+  }
+  return ids;
+}
+
+function loadPhotoAsset(id) {
+  if (!Number.isInteger(id)) return Promise.resolve(null);
+  if (photoLoadCache.has(id)) return photoLoadCache.get(id);
+
+  const loader = new Promise((resolve) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.loading = 'eager';
+    image.onload = () => {
+      if (typeof image.decode === 'function') {
+        image.decode().then(() => resolve(image)).catch(() => resolve(image));
+      } else {
+        resolve(image);
+      }
+    };
+    image.onerror = () => resolve(null);
+    image.src = photoPath(id);
+  });
+
+  photoLoadCache.set(id, loader);
+  return loader;
+}
+
+function schedulePhotoPreload(currentTime = Number.isFinite(songAudio?.currentTime) ? songAudio.currentTime : 0) {
+  if (photoPreloadFrame) return;
+  photoPreloadFrame = requestAnimationFrame(() => {
+    photoPreloadFrame = 0;
+    const safeTime = Number.isFinite(songAudio?.currentTime) ? songAudio.currentTime : currentTime;
+    const nextPhotos = getPhotoPreloadPlan(safeTime);
+    nextPhotos.slice(0, 18).forEach((id) => {
+      if (!photoLoadCache.has(id)) loadPhotoAsset(id);
+    });
+  });
+}
+
 function photoDirector(time) {
   const ids = []; photoRanges.forEach(([start,end,first,last]) => { if (time >= start && time < end) for (let id=first; id<=last; id += 1) if (!ids.includes(id)) ids.push(id); });
-  const signature = ids.join(','); if (signature === photoSignature) return; photoSignature = signature;
-  const pair = ids.length === 2; [leftPhoto,rightPhoto].forEach((slot) => slot.classList.toggle('is-hidden', !pair)); photoCluster.classList.toggle('is-visible', ids.length > 2);
+  const signature = ids.join(',');
+  if (signature === photoTargetSignature) return;
+  photoTargetSignature = signature;
+  const pair = ids.length === 2;
+  [leftPhoto,rightPhoto].forEach((slot) => slot.classList.toggle('is-hidden', !pair));
+  photoCluster.classList.toggle('is-visible', ids.length > 2);
   if (!ids.length) return;
-  if (pair) { fixedImages.forEach((image,index) => { image.src = photoPath(ids[index]); image.parentElement.classList.remove('photo-swap'); void image.parentElement.offsetWidth; image.parentElement.classList.add('photo-swap'); }); return; }
-  photoItems.forEach((item,index) => { const id = ids[index]; item.classList.toggle('is-active', Boolean(id)); if (id) item.querySelector('img').src = photoPath(id); });
+
+  if (pair) {
+    Promise.all(ids.map((id) => loadPhotoAsset(id))).then(() => {
+      if (photoTargetSignature !== signature) return;
+      fixedImages.forEach((image, index) => {
+        const id = ids[index];
+        if (!id) return;
+        const nextSource = photoPath(id);
+        const slot = image.parentElement;
+        if (image.dataset.photoId === String(id) && image.currentSrc === nextSource) {
+          slot.classList.add('is-ready');
+          return;
+        }
+        image.src = nextSource;
+        image.dataset.photoId = String(id);
+        slot.classList.add('is-ready');
+      });
+      photoSignature = signature;
+    });
+    return;
+  }
+
+  Promise.all(ids.map((id) => loadPhotoAsset(id))).then(() => {
+    if (photoTargetSignature !== signature) return;
+    photoItems.forEach((item, index) => {
+      const id = ids[index];
+      const image = item.querySelector('img');
+      if (!id) {
+        item.classList.remove('is-active', 'is-ready');
+        image.removeAttribute('src');
+        image.dataset.photoId = '';
+        return;
+      }
+      const nextSource = photoPath(id);
+      if (image.dataset.photoId === String(id) && image.currentSrc === nextSource) {
+        item.classList.add('is-active', 'is-ready');
+        return;
+      }
+      image.src = nextSource;
+      image.dataset.photoId = String(id);
+      item.classList.add('is-active', 'is-ready');
+    });
+    photoSignature = signature;
+  });
 }
 
 /*
@@ -97,7 +219,8 @@ class MemoryUniverse {
   }
 
   resize() {
-    const scale = Math.min(window.devicePixelRatio || 1, 2);
+    const isMobile = window.matchMedia('(max-width: 768px)').matches || navigator.maxTouchPoints > 1;
+    const scale = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.scale = scale;
@@ -261,6 +384,7 @@ function renderLyrics() {
 function runLyricClock() {
   renderLyrics();
   photoDirector(songAudio.currentTime);
+  schedulePhotoPreload(songAudio.currentTime);
   if (!songAudio.paused && !songAudio.ended) lyricFrame = requestAnimationFrame(runLyricClock);
 }
 
@@ -306,6 +430,7 @@ function startSongFromUserGesture() {
   songAudio.volume = 1;
   songAudio.currentTime = 0;
   songAudio.play().then(() => {
+    schedulePhotoPreload(songAudio.currentTime);
     runLyricClock();
     startBeatReactivity();
     memoryUniverse.start();
@@ -319,7 +444,10 @@ function beginSongScene() {
   songScene.setAttribute('aria-hidden', 'false');
 }
 
-window.addEventListener('load', () => setTimeout(() => cover.classList.add('is-ready'), 120));
+window.addEventListener('load', () => {
+  setTimeout(() => cover.classList.add('is-ready'), 120);
+  schedulePhotoPreload(0);
+});
 
 document.querySelectorAll('.polaroid img').forEach((image) => {
   image.addEventListener('error', () => image.closest('.polaroid').classList.add('is-placeholder'));
